@@ -5,12 +5,12 @@ on:
     branches:
     - main
   pull_request:
-  workflow_dispatch:
-    inputs:
-      instanceCount:
-        description: 'Number of app instances to start'
-        required: true
-        default: "3"
+  # workflow_dispatch:
+  #   inputs:
+  #     instanceCount:
+  #       description: 'Number of app instances to start'
+  #       required: true
+  #       default: "3"
 
 env:
   PMLO_ENV: "prod"
