@@ -1,6 +1,14 @@
 # tutorial-tf-gh
-Tutorial Terraform &amp; Github Actions &amp; Ansible
+Test Terraform &amp; Github Actions &amp; Ansible
+Goal:
+- Deploy EC2 instances using Terraform - DONE
+- Dynamically create SSH key to connect to instances - DONE
+- Use ansible to install a web service (pgadmin4) - IN PROGRESS
+- Create a RDS instance - DONE
+- Pulling data from RDS - TODO
+- Centralized logging - IN PROGRESS (using AWS Cloudwatch)
 
+Note: we have the ability to decide how many instances of pgadmin4 we want to start
 
 # Manual testing
 In case you want to test your terraform locally, some preparations are needed.
