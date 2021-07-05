@@ -21,3 +21,10 @@ output "aws_db_instance_rds_username" {
   value       = aws_db_instance.pmlo-test-rds.username
   sensitive   = true
 }
+
+
+output "aws_db_instance_rds_endpoint" {
+  description = "RDS instance endpoint"
+  value       = aws_db_instance.pmlo-test-rds.endpoint
+  sensitive   = true
+}
