@@ -1,0 +1,106 @@
+name: 'PMLO Test Prod'
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+env:
+  PMLO_ENV: "prod"
+  PMLO_AWS_REGION: "ap-southeast-1"
+  PMLO_BUCKET: "${{ secrets.PMLO_BUCKET_NAME }}"
+  AWS_ACCESS_KEY_ID: "${{ secrets.PROD_AWS_ACCESS_KEY_ID }}"
+  AWS_SECRET_ACCESS_KEY: "${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}"
+  AWS_IAM_USER: "${{ secrets.PROD_AWS_IAM_USER }}"
+  AWS_DEFAULT_REGION: ${{ env.PMLO_AWS_REGION }}
+  TF_VAR_env: "${{ env.PMLO_ENV }}"
+  TF_VAR_s3_bucket: "${{ env.PMLO_BUCKET }}"
+  TF_VAR_region: "${{ env.PMLO_AWS_REGION }}"
+  TF_VAR_dynamodb_tf_state_lock: "tf-state-${{ env.PMLO_AWS_REGION }}-${{ env.PMLO_ENV }}-lock"
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    environment: production
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        aws-region: "${{ env.PMLO_AWS_REGION }}"
+
+    - name: Ensure S3 bucket for TF state is created
+      run: |
+        nb_match_bucket=`aws s3 ls | grep -c ${{ env.PMLO_BUCKET }}`
+        echo "INFO: Found ${nb_match_bucket} matching ${{ env.PMLO_BUCKET }}"
+        if [[ ${nb_match_bucket} -eq 0 ]]; then
+          echo "INFO: Creating missing bucket ${{ env.PMLO_BUCKET }}"
+          aws s3api create-bucket --bucket ${{ env.PMLO_BUCKET }} \
+            --region="${{ env.PMLO_AWS_REGION }}" \
+            --create-bucket-configuration LocationConstraint="${{ env.PMLO_AWS_REGION }}"
+          aws s3api put-bucket-versioning --bucket ${{ env.PMLO_BUCKET }} \
+            --versioning-configuration Status=Enabled
+          if [[ `aws s3api list-buckets --query "Buckets[].Name" | grep -q "${{ env.PMLO_BUCKET }}"` ]]; then
+            echo "INFO: Bucket has been created Succesfully"
+          else
+            echo "ERR: Failed to create bucket"
+          fi
+        fi
+
+    - name: Create DynamoDB Lock table
+      run: |
+        nb_match_lock_table=`aws dynamodb list-tables --query "TableNames[]" | grep -c ${{ env.TF_VAR_dynamodb_tf_state_lock }}`
+        echo "INFO: Found ${nb_match_lock_table} matching ${{ env.TF_VAR_dynamodb_tf_state_lock }}"
+        if [[ ${nb_match_lock_table} -eq 0 ]]; then
+          echo "INFO: Creating missing lock table ${{ env.TF_VAR_dynamodb_tf_state_lock }}"
+          aws dynamodb create-table \
+            --table-name "${TF_VAR_dynamodb_tf_state_lock}" \
+            --attribute-definitions \
+              AttributeName=LockID,AttributeType=S \
+            --key-schema \
+              AttributeName=LockID,KeyType=HASH \
+            --provisioned-throughput \
+              ReadCapacityUnits=20,WriteCapacityUnits=20
+          if [[ `aws dynamodb list-tables --query "TableNames[]" | grep -q "${{ env.TF_VAR_dynamodb_tf_state_lock }}"` ]]; then
+            echo "INFO: Lock table ${{ env.TF_VAR_dynamodb_tf_state_lock }} has been created Succesfully"
+          else
+            echo "ERR: Failed to create lock table ${{ env.TF_VAR_dynamodb_tf_state_lock }}"
+          fi
+        fi       
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -input=false
+
+    # Validate that all Terraform configuration files
+    - name: Terraform Validate
+      run: terraform validate
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      id: plan
+      if: github.event_name == 'pull_request'
+      run: terraform plan
+
+    # On push to main, build or change infrastructure according to Terraform configuration files
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: terraform apply -auto-approve -input=false
