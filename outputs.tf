@@ -17,11 +17,11 @@ output "app-servers-hostnames" {
 
 output "rds-endpoint" {
   description = "RDS server endpoint"
-  value       = "${module.rds.aws_db_instance_rds_endpoint}"
+  value       = module.rds.aws_db_instance_rds_endpoint
 }
 
 output "rds-username" {
   description = "RDS server username"
-  value       = "${module.rds.aws_db_instance_rds_username}"
+  value       = module.rds.aws_db_instance_rds_username
   sensitive   = true
 }
