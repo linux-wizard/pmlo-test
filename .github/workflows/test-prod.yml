@@ -20,8 +20,6 @@ env:
   AWS_SECRET_ACCESS_KEY: "${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}"
   AWS_IAM_USER: "${{ secrets.PROD_AWS_IAM_USER }}"
 
-  TF_VAR_app_count: "${{ github.event.inputs.instanceCount }}"
-
 jobs:
   terraform:
     name: 'Terraform'
