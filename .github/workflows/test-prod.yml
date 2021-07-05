@@ -13,7 +13,7 @@ env:
   AWS_ACCESS_KEY_ID: "${{ secrets.PROD_AWS_ACCESS_KEY_ID }}"
   AWS_SECRET_ACCESS_KEY: "${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}"
   AWS_IAM_USER: "${{ secrets.PROD_AWS_IAM_USER }}"
-  AWS_DEFAULT_REGION: ${{ env.PMLO_AWS_REGION }}
+  AWS_DEFAULT_REGION: "${{ env.PMLO_AWS_REGION }}"
   TF_VAR_env: "${{ env.PMLO_ENV }}"
   TF_VAR_s3_bucket: "${{ env.PMLO_BUCKET }}"
   TF_VAR_region: "${{ env.PMLO_AWS_REGION }}"
