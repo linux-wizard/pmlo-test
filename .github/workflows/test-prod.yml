@@ -13,11 +13,7 @@ env:
   AWS_ACCESS_KEY_ID: "${{ secrets.PROD_AWS_ACCESS_KEY_ID }}"
   AWS_SECRET_ACCESS_KEY: "${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}"
   AWS_IAM_USER: "${{ secrets.PROD_AWS_IAM_USER }}"
-  AWS_DEFAULT_REGION: "${{ env.PMLO_AWS_REGION }}"
-  TF_VAR_env: "prod"
-  TF_VAR_s3_bucket: "pmlo-test"
-  TF_VAR_region: "ap-southeast-1"
-  TF_VAR_dynamodb_tf_state_lock: "tf-state-${{ env.PMLO_AWS_REGION }}-${{ env.PMLO_ENV }}-lock"
+
   TF_VAR_app_count: "4"
 
 jobs:
@@ -62,6 +58,8 @@ jobs:
         fi
 
     - name: Create DynamoDB Lock table
+      env:
+        TF_VAR_dynamodb_tf_state_lock: "tf-state-${{ env.PMLO_AWS_REGION }}-${{ env.PMLO_ENV }}-lock"
       run: |
         nb_match_lock_table=`aws dynamodb list-tables --query "TableNames[]" | grep -c ${{ env.TF_VAR_dynamodb_tf_state_lock }}`
         echo "INFO: Found ${nb_match_lock_table} matching ${{ env.TF_VAR_dynamodb_tf_state_lock }}"
@@ -84,24 +82,50 @@ jobs:
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
+      env:
+        TF_VAR_env: "${{ env.PMLO_ENV }}"
+        TF_VAR_s3_bucket: "${{ env.PMLO_BUCKET }}"
+        TF_VAR_region: "${{ env.PMLO_AWS_REGION }}"
+        TF_VAR_dynamodb_tf_state_lock: "tf-state-${{ env.PMLO_AWS_REGION }}-${{ env.PMLO_ENV }}-lock"
+
       run: terraform init -input=false
 
     # Validate that all Terraform configuration files
     - name: Terraform Validate
+      env:
+        TF_VAR_env: "${{ env.PMLO_ENV }}"
+        TF_VAR_s3_bucket: "${{ env.PMLO_BUCKET }}"
+        TF_VAR_region: "${{ env.PMLO_AWS_REGION }}"
+        TF_VAR_dynamodb_tf_state_lock: "tf-state-${{ env.PMLO_AWS_REGION }}-${{ env.PMLO_ENV }}-lock"
       run: terraform validate
 
     # Checks that all Terraform configuration files adhere to a canonical format
     - name: Terraform Format
+      env:
+        TF_VAR_env: "${{ env.PMLO_ENV }}"
+        TF_VAR_s3_bucket: "${{ env.PMLO_BUCKET }}"
+        TF_VAR_region: "${{ env.PMLO_AWS_REGION }}"
+        TF_VAR_dynamodb_tf_state_lock: "tf-state-${{ env.PMLO_AWS_REGION }}-${{ env.PMLO_ENV }}-lock"
       run: terraform fmt -check
 
 
     # Generates an execution plan for Terraform
     - name: Terraform Plan
+      env:
+        TF_VAR_env: "${{ env.PMLO_ENV }}"
+        TF_VAR_s3_bucket: "${{ env.PMLO_BUCKET }}"
+        TF_VAR_region: "${{ env.PMLO_AWS_REGION }}"
+        TF_VAR_dynamodb_tf_state_lock: "tf-state-${{ env.PMLO_AWS_REGION }}-${{ env.PMLO_ENV }}-lock"
       id: plan
       if: github.event_name == 'pull_request'
       run: terraform plan
 
     # On push to main, build or change infrastructure according to Terraform configuration files
     - name: Terraform Apply
+      env:
+        TF_VAR_env: "${{ env.PMLO_ENV }}"
+        TF_VAR_s3_bucket: "${{ env.PMLO_BUCKET }}"
+        TF_VAR_region: "${{ env.PMLO_AWS_REGION }}"
+        TF_VAR_dynamodb_tf_state_lock: "tf-state-${{ env.PMLO_AWS_REGION }}-${{ env.PMLO_ENV }}-lock"
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: terraform apply -auto-approve -input=false
