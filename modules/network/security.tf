@@ -13,7 +13,8 @@ resource "aws_security_group" "pmlo-only-my_public_ip" {
     from_port = 22
     to_port   = 22
     cidr_blocks = [
-      "${local.my_public_ip}/32"
+      "${local.my_public_ip}/32",
+      "0.0.0.0/32"
     ]
   }
 
@@ -23,7 +24,8 @@ resource "aws_security_group" "pmlo-only-my_public_ip" {
     from_port = 80
     to_port   = 80
     cidr_blocks = [
-      "${local.my_public_ip}/32"
+      "${local.my_public_ip}/32",
+      "0.0.0.0/32"
     ]
   }
 
