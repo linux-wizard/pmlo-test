@@ -6,12 +6,14 @@ output "ssh_private_key" {
 
 output "app-servers-ips" {
   description = "List of app-servers public IPs"
-  value       = aws_instance.app_server.*.public_ip
+  value       = aws_instance.app_server.public_ip
+  // value       = aws_instance.app_server.*.public_ip
 }
 
 output "app-servers-hostnames" {
   description = "List of app-servers public hostnames"
-  value       = aws_instance.app_server.*.public_dns
+  value       = aws_instance.app_server.public_dns
+  // value       = aws_instance.app_server.*.public_dns
 }
 
 
