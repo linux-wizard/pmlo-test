@@ -9,11 +9,11 @@ on:
     inputs:
       instanceCount:
         description: 'Number of app instances to start'
-        required: true
+        required: false
         default: "3"
       environmentPMLO:
         description: 'Environment'
-        required: true
+        required: false
         default: "prod"
 env:
   PMLO_ENV: "${{ github.event.inputs.environmentPMLO }}"
