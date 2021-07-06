@@ -1,0 +1,13 @@
+version: "3.3"
+services:
+  pgadmin4:
+    image: {{ app_image }}
+    restart: "no"
+    env_file:
+      - {{ app_name }}.env
+    network_mode: "host"
+    logging:
+      driver: awslog
+      options:
+        awslog-region: {{ aws_region }}
+        awslogs-group: {{ app_cloudwatch_group }}

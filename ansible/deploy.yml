@@ -1,0 +1,10 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+  serial: 1
+  roles:
+    - name: docker
+      tags: [ docker, common ]
+    - name: pgadmin4
+      tags: [ pgadmin4, app ]

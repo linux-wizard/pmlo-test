@@ -1,0 +1,12 @@
+- name: user_add_to_docker_group
+  user:
+    name: ec2-user
+    append: yes
+    groups: docker
+
+
+- name: create pgadmin user
+  user:
+    name: pgadmin
+    group: pgadmin
+    home: {{ app_home }}

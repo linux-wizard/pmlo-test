@@ -1,0 +1,4 @@
+app_name: "pgadmin4"
+app_image: "dpage/pgadmin4"
+app_home: "/var/lib/pgadmin"
+app_cloudwatch_group: "pmlo-test-pgadmin4-prod"

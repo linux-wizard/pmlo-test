@@ -1,0 +1,23 @@
+---
+
+- name: package_docker
+  yum:
+    name: docker
+    state: present
+    update_cache: yes
+
+- name: service_docker_is_running
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: pip_package_docker-compose
+  pip:
+    name: docker-compose
+
+- name: user_add_to_docker_group
+  user:
+    name: ec2-user
+    append: yes
+    groups: docker
