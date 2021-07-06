@@ -36,6 +36,20 @@ jobs:
         shell: bash
 
     steps:
+    - name: Set  env
+      id: set_env
+      run: |
+        if [[ "x${PMLO_ENV}" == "x" ]]; then
+          PMLO_ENV="prod"
+        fi
+        echo "PMLO_ENV=$PMLO_ENV" >> $GITHUB_ENV
+    - name: Set app count
+      id: set_count
+      run: |
+        if [[ "x${TF_VAR_app_count}" == "x" ]]; then
+          TF_VAR_app_count="4"
+        fi
+        echo "TF_VAR_app_count=$TF_VAR_app_count" >> $GITHUB_ENV
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
       uses: actions/checkout@v2
