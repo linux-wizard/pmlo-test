@@ -18,21 +18,65 @@ resource "aws_db_subnet_group" "pmlo-test-rds" {
 
 
 resource "aws_db_parameter_group" "pmlo-test-rds-conf" {
-  name   = "pmlo-test-rds-conf-prod"
-  family = "postgres13"
+  name        = "pmlo-test-rds-conf-prod"
+  description = "Parameter group for RDS MariaDB"
+  // taken from aws rds describe-db-engine-versions --default-only --engine postgres
+  // family = "postgres13"
+
+  // taken from aws rds describe-db-engine-versions --default-only --engine mariadb
+  family = "mariadb10.4"
+
+  // parameter {
+  //   name  = "log_connections"
+  //   value = "1"
+  // }
 
   parameter {
-    name  = "log_connections"
+    name  = "general_log"
     value = "1"
   }
+  parameter {
+    name  = "long_query_time"
+    value = "2"
+  }
+  parameter {
+    name  = "slow_query_log"
+    value = "1"
+  }
+  parameter {
+    name  = "log_throttle_queries_not_using_indexes"
+    value = "1"
+  }
+  parameter {
+    name  = "log_throttle_queries_not_using_indexes"
+    value = "1"
+  }
+  parameter {
+    name  = "log_output"
+    value = "FILE"
+  }
+
+  // Only log to table on staging environment as this can impact performances
+  // dynamic "parameter" {
+  //   for_each = var.env ? "stg" : ""
+  //   content {
+  //     name = "log_output"
+  //     value = "TABLE"
+  //   }
+  //   parameter {
+  //     name  = "log_output"
+  //     value = "TABLE"
+  // }
+  // }
+
 }
 
 resource "aws_db_instance" "pmlo-test-rds" {
   identifier             = "pmlo-test-rds-prod"
   instance_class         = "db.t3.micro"
   allocated_storage      = 5
-  engine                 = "postgres"
-  engine_version         = "13.1"
+  engine                 = "mariadb"
+  engine_version         = "10.4.13"
   username               = "pmlo_test_root_user"
   password               = random_password.pmlo-test-rds-passwd-prod.result
   db_subnet_group_name   = aws_db_subnet_group.pmlo-test-rds.id
