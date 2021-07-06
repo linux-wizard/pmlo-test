@@ -78,7 +78,7 @@ resource "aws_instance" "app_server" {
   //   subnet_id         = "${aws_subnet.app-subnet.id}"
   security_groups = ["${module.network.aws_security_group_pmlo-only-my_public_ip_id}"]
   subnet_id       = module.network.aws_subnet_app_subnet_id
-  count = var.app_count
+  count           = var.app_count
 
 
   // provisioner "remote-exec" {
