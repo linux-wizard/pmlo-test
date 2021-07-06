@@ -9,12 +9,12 @@ on:
     inputs:
       instanceCount:
         description: 'Number of app instances to start'
-        required: false
-        default: "3"
+        required: true
+        default: '3'
       environmentPMLO:
         description: 'Environment'
-        required: false
-        default: "prod"
+        required: true
+        default: 'prod'
 env:
   PMLO_ENV: "${{ github.event.inputs.environmentPMLO }}"
   PMLO_AWS_REGION: "ap-southeast-1"
