@@ -19,9 +19,13 @@ output "aws_db_instance_rds_port" {
 output "aws_db_instance_rds_username" {
   description = "RDS instance root username"
   value       = aws_db_instance.pmlo-test-rds.username
-  sensitive   = true
 }
 
+output "aws_db_instance_rds_pasword" {
+  description = "RDS instance root password"
+  value       = aws_db_instance.pmlo-test-rds.password
+  sensitive   = true
+}
 
 output "aws_db_instance_rds_endpoint" {
   description = "RDS instance endpoint"
