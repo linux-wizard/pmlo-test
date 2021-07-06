@@ -78,21 +78,21 @@ resource "aws_instance" "app_server" {
   //   subnet_id         = "${aws_subnet.app-subnet.id}"
   security_groups = ["${module.network.aws_security_group_pmlo-only-my_public_ip_id}"]
   subnet_id       = module.network.aws_subnet_app_subnet_id
-  //public_ip         = aws_eip.pmlo-test-eip.public_ip
-  // count = var.app_count
+  count = var.app_count
 
 
-  provisioner "remote-exec" {
-    inline = ["echo 'Wait until SSH is ready'"]
+  // provisioner "remote-exec" {
+  //   inline = ["echo 'Wait until SSH is ready'"]
 
-    connection {
-      type        = "ssh"
-      user        = local.ssh_user
-      private_key = tls_private_key.pmlo-ssh-keys-gen.private_key_pem
-      // host        = aws_instance.app_server[count.index].public_ip
-      host = aws_instance.app_server.public_ip
-    }
-  }
+  //   connection {
+  //     type        = "ssh"
+  //     user        = local.ssh_user
+  //     private_key = tls_private_key.pmlo-ssh-keys-gen.private_key_pem
+  //     host        = self.public_ip
+  //     host_key = tls_private_key.pmlo-ssh-keys-gen.public_key_openssh
+  //     // host = aws_instance.app_server.public_ip
+  //   }
+  // }
   tags = {
     Name = "pmlo-test-app-prod"
   }
