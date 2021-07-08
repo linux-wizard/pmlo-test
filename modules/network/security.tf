@@ -35,7 +35,7 @@ resource "aws_security_group" "pmlo-only-my_public_ip" {
       "0.0.0.0/32"
     ]
   }
-    ingress {
+  ingress {
     protocol  = "tcp"
     from_port = 0
     to_port   = 8443
