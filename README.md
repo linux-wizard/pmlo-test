@@ -115,3 +115,18 @@ You can extract LB DNS from terraform state
 ```shell
 terraform show -json | jq .values.root_module.child_modules[].resources[].values.dns_name | grep -v null
 ```
+
+# Caveats/Encountered Issue
+- You can't really use MySQL and PostgreSQL to initialize an RDS instance: terraform do not provide ways for a ressource to be avaialble, and so they fail to connect as RDS is not up yet
+- Passing directly the private key from terraform state to remote-exec ssh do not work. I guess needs to goi using a file or do some cleanups before
+- You can use https://github.com/micahhausler/container-transform to convert a docker-compose.yml to a ECS JSON task definition, however it will fail to work with python 2.7 (default on MacOS X). To make it work, need to install with python3 and install manually the dependencies
+```shell
+pip3 install PyYAML
+pip3 install Jinja2
+pip3 install click
+pip3 install --no-deps container-transform
+cat test2-compose.yml | container-transform -v
+```
+- Containers dependencies can be tricky to handle if their entrypoint do not have ways to deal with it. For example, while the database may start, it may not be ready yet to accept connections. You may want to use a custom healthcheck to check if database accept connection and use HEALTHY state as dependency.
+- Another trap I spent 2 days trying to fix it: if you pass the load balancer instead of the target group to aws_ecs_service, terraform won't complain, but deployment will fail saying you don't have enough permissions to modify target. 2 days later, after googling the error, stackoverflow save me: https://stackoverflow.com/questions/56742157/unable-to-assume-role-and-validate-the-specified-targetgrouparn. Should ahve done it sooner :(
+- Last but not least: I still got a 502 bad Gateway when trying to access the application, and the container keeps switching to drain state :(
