@@ -39,10 +39,6 @@ module "rds" {
   container_name                        = local.container_name
 }
 
-module "cloudwatch" {
-  source = "./modules/cloudwatch"
-}
-
 module "ecs_opencart" {
   source = "./modules/ecs/opencart"
   region = var.region
