@@ -4,6 +4,16 @@ output "random_password_pmlo-test-rds-passwd-prod" {
   sensitive   = true
 }
 
+output "aws_db_instance_rds_engine_version" {
+  description = "RDS instance hostname"
+  value       = data.aws_db_instance.pmlo-test-rds.engine_version
+}
+
+output "aws_db_instance_rds_engine" {
+  description = "RDS instance hostname"
+  value       = aws_db_instance.pmlo-test-rds.engine
+}
+
 output "aws_db_instance_rds_hostname" {
   description = "RDS instance hostname"
   value       = aws_db_instance.pmlo-test-rds.address
@@ -21,7 +31,7 @@ output "aws_db_instance_rds_username" {
   value       = aws_db_instance.pmlo-test-rds.username
 }
 
-output "aws_db_instance_rds_pasword" {
+output "aws_db_instance_rds_password" {
   description = "RDS instance root password"
   value       = aws_db_instance.pmlo-test-rds.password
   sensitive   = true

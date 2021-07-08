@@ -1,15 +1,17 @@
-module "network" {
-  source = "../network"
-}
+// module "network" {
+//   source = "../network"
+// }
 
 
 resource "aws_db_subnet_group" "pmlo-test-rds" {
   name = "pmlo-rds-subnet-prod"
-  subnet_ids = [
-    "${module.network.aws_subnet_rds_subnet_id-1}",
-    "${module.network.aws_subnet_rds_subnet_id-2}",
-    "${module.network.aws_subnet_rds_subnet_id-3}"
-  ]
+  // subnet_ids = [
+  //   "${module.network.aws_subnet_rds_subnet_id-1}",
+  //   "${module.network.aws_subnet_rds_subnet_id-2}",
+  //   "${module.network.aws_subnet_rds_subnet_id-3}"
+  // ]
+  //subnet_ids = var.network_aws_subnet_rds_subnet_ids
+  subnet_ids = var.network_aws_subnet_private_subnet_ids
 
   tags = {
     Name = "RDS DB subnet"
@@ -18,70 +20,41 @@ resource "aws_db_subnet_group" "pmlo-test-rds" {
 
 
 resource "aws_db_parameter_group" "pmlo-test-rds-conf" {
-  name        = "pmlo-test-rds-conf-prod"
-  description = "Parameter group for RDS MariaDB"
+  name        = "pmlo-test-rds-pgsql-prod"
+  description = "Parameter group for RDS PostgreSQL"
   // taken from aws rds describe-db-engine-versions --default-only --engine postgres
-  // family = "postgres13"
+  family = "postgres12"
 
-  // taken from aws rds describe-db-engine-versions --default-only --engine mariadb
-  family = "mariadb10.4"
-
-  // parameter {
-  //   name  = "log_connections"
-  //   value = "1"
-  // }
-
+  // To get list of parameters
+  // aws rds create-db-parameter-group --db-parameter-group-name test-postgresql --db-parameter-group-family "postgres13" --description "test paraneter group for PGSQL"
+  // aws rds describe-db-parameters --db-parameter-group-name test-postgresql > pgsql-db-parameters.txt
   parameter {
-    name  = "general_log"
+    name  = "log_connections"
     value = "1"
   }
-  parameter {
-    name  = "long_query_time"
-    value = "2"
-  }
-  parameter {
-    name  = "slow_query_log"
-    value = "1"
-  }
-  parameter {
-    name  = "log_throttle_queries_not_using_indexes"
-    value = "1"
-  }
-  parameter {
-    name  = "log_throttle_queries_not_using_indexes"
-    value = "1"
-  }
-  parameter {
-    name  = "log_output"
-    value = "FILE"
-  }
-
-  // Only log to table on staging environment as this can impact performances
-  // dynamic "parameter" {
-  //   for_each = var.env ? "stg" : ""
-  //   content {
-  //     name = "log_output"
-  //     value = "TABLE"
-  //   }
-  //   parameter {
-  //     name  = "log_output"
-  //     value = "TABLE"
-  // }
-  // }
-
 }
 
 resource "aws_db_instance" "pmlo-test-rds" {
-  identifier             = "pmlo-test-rds-prod"
-  instance_class         = "db.t3.micro"
-  allocated_storage      = 5
-  engine                 = "mariadb"
-  engine_version         = "10.4.13"
-  username               = "pmlo_test_root_user"
+  identifier        = "pmlo-test-rds-pgsql-prod"
+  instance_class    = "db.t3.micro"
+  allocated_storage = 5
+  engine            = "postgres"
+  // engine_version         = "13.1"
+  username               = "postgres"
+  backup_window          = "01:00-01:30"
+  maintenance_window     = "sun:03:00-sun:03:30"
   password               = random_password.pmlo-test-rds-passwd-prod.result
   db_subnet_group_name   = aws_db_subnet_group.pmlo-test-rds.id
-  vpc_security_group_ids = [aws_security_group.rds.id]
+  vpc_security_group_ids = [aws_security_group.rds-pgsql.id]
   parameter_group_name   = aws_db_parameter_group.pmlo-test-rds-conf.name
-  publicly_accessible    = false
+  publicly_accessible    = true
   skip_final_snapshot    = true
+
+  // performance_insights_enabled          = var.performance_insights_enabled
+  // performance_insights_retention_period = var.performance_insights_enabled ? var.performance_insights_retention_period : null
+  // performance_insights_kms_key_id       = var.performance_insights_enabled ? var.performance_insights_kms_key_id : null
+}
+
+data "aws_db_instance" "pmlo-test-rds" {
+  db_instance_identifier = aws_db_instance.pmlo-test-rds.name
 }
