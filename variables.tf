@@ -45,8 +45,9 @@ variable "app_count" {
 // }
 
 variable "aws_instance_default_ami" {
-  type        = string
-  default     = "ami-018c1c51c7a13e363"
+  type = string
+  // default     = "ami-018c1c51c7a13e363"
+  default     = "ami-039ec8fc674496137"
   description = "Default instance ami. Will match the default one in ap-southeast-1 region"
 }
 
@@ -60,6 +61,12 @@ variable "aws_instance_app_name_prod" {
   type        = string
   default     = "pmlo-app-prod"
   description = "hostname for application Instances"
+}
+
+variable "rds_database" {
+  type        = string
+  default     = "postgres"
+  description = "database"
 }
 
 // variable "pmlo_ssh_key_prod" {

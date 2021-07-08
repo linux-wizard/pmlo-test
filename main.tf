@@ -26,15 +26,36 @@ terraform {
 
 
 module "network" {
-  source = "./modules/network"
+  source         = "./modules/network"
+  container_port = local.container_port
+  container_name = local.container_name
 }
 
 module "rds" {
-  source = "./modules/rds"
+  source                                = "./modules/rds"
+  network_aws_subnet_private_subnet_ids = module.network.aws_subnet_private_subnet_ids
+  aws_vpc_network_id                    = module.network.aws_vpc_pmlo-test-private-network-prod_id
+  container_port                        = local.container_port
+  container_name                        = local.container_name
 }
 
-module "cloudwatch" {
-  source = "./modules/cloudwatch"
+module "ecs_opencart" {
+  source = "./modules/ecs/opencart"
+  region = var.region
+  env    = var.env
+
+  aws_vpc_network_id       = module.network.aws_vpc_pmlo-test-private-network-prod_id
+  aws_public_subnets_ids   = module.network.aws_subnet_app_subnet_ids
+  aws_private_subnets_ids  = module.network.aws_subnet_private_subnet_ids
+  rds_endpoint             = module.rds.aws_db_instance_rds_endpoint
+  rds_username             = module.rds.aws_db_instance_rds_username
+  rds_password             = module.rds.aws_db_instance_rds_password
+  rds_engine_version       = module.rds.aws_db_instance_rds_engine_version
+  rds_database             = var.rds_database
+  app_user                 = "app-user-${var.env}"
+  aws_instance_default_ami = var.aws_instance_default_ami
+  container_port           = local.container_port
+  container_name           = local.container_name
 }
 
 // Enable remote state data source to be able to pass info around modules
@@ -77,7 +98,7 @@ resource "aws_instance" "app_server" {
   //   security_groups   = ["${aws_security_group.pmlo-only-my_public_ip.id}"]
   //   subnet_id         = "${aws_subnet.app-subnet.id}"
   security_groups = ["${module.network.aws_security_group_pmlo-only-my_public_ip_id}"]
-  subnet_id       = module.network.aws_subnet_app_subnet_id
+  subnet_id       = module.network.aws_subnet_app_subnet_ids[0]
   count           = var.app_count
 
 

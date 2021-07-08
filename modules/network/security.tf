@@ -21,10 +21,25 @@ resource "aws_security_group" "pmlo-only-my_public_ip" {
   // App access
   ingress {
     protocol  = "tcp"
-    from_port = 80
-    to_port   = 80
+    from_port = var.container_port
+    to_port   = var.container_port
     cidr_blocks = [
-      "${local.my_public_ip}/32",
+      "0.0.0.0/32"
+    ]
+  }
+  ingress {
+    protocol  = "tcp"
+    from_port = 0
+    to_port   = var.container_port
+    cidr_blocks = [
+      "0.0.0.0/32"
+    ]
+  }
+  ingress {
+    protocol  = "tcp"
+    from_port = 0
+    to_port   = 8443
+    cidr_blocks = [
       "0.0.0.0/32"
     ]
   }
@@ -38,6 +53,6 @@ resource "aws_security_group" "pmlo-only-my_public_ip" {
   }
 
   tags = {
-    Name = "allow_ssh"
+    Name = "allow ssh + Application"
   }
 }
