@@ -11,6 +11,8 @@ Goal:
 
 Note: we have the ability to decide how many instances we want to start
 
+Opencart should be accessible by connectng to the LB: 
+
 # Manual testing
 In case you want to test your terraform locally, some preparations are needed.
 Required components:
@@ -107,3 +109,9 @@ chmod 600 ~/.ssh/id-rsa-pmlo-test
 
 ### Connect to an app server instance
 ssh -i ~/.ssh/id-rsa-pmlo-test ec2-user@<INSTANCE_PUBLIC_IP>
+
+## Get LB DNS
+You can extract LB DNS from terraform state
+```shell
+terraform show -json | jq .values.root_module.child_modules[].resources[].values.dns_name | grep -v null
+```
